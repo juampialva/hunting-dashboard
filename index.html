@@ -6,6 +6,7 @@
 <title>Hunting Instore MLA · 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 :root{
   --bg:#F2F4F8; --card:#fff; --border:#DDE1EC;
@@ -92,6 +93,12 @@ select#hunterSelect:focus{outline:none;border-color:var(--teal)}
 .hl-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--navy);margin-bottom:6px}
 .hl-b{display:flex;align-items:flex-start;gap:5px;margin-bottom:5px;color:var(--muted);font-size:11px}
 .hl-b::before{content:'›';color:#C0C4D8;flex-shrink:0;font-size:14px;line-height:1.1}
+
+.card-wrap{position:relative}
+.dl-btn{position:absolute;top:8px;right:8px;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:6px;padding:4px 8px;font-size:10px;font-weight:500;color:var(--color-text-secondary);cursor:pointer;display:flex;align-items:center;gap:4px;opacity:0;transition:opacity .2s;z-index:10;white-space:nowrap}
+.card-wrap:hover .dl-btn{opacity:1}
+.dl-btn:hover{background:var(--color-background-info);color:var(--color-text-info);border-color:var(--color-border-tertiary)}
+.dl-btn svg{width:11px;height:11px;flex-shrink:0}
 </style>
 </head>
 <body>
@@ -366,6 +373,42 @@ DATA.sort((a,b)=>a.name.localeCompare(b.name)).forEach((d,i)=>{
 });
 sel.addEventListener('change',e=>render(DATA[+e.target.value]));
 render(DATA[0]);
+
+function dlCard(cardId, filename){
+  const el = document.getElementById(cardId);
+  if(!el) return;
+  html2canvas(el, {scale:3, backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--color-background-primary') || '#ffffff', useCORS:true, logging:false})
+    .then(canvas => {
+      const a = document.createElement('a');
+      a.download = filename + '_' + DATA[+document.getElementById('sel').value].name.replace(/ /g,'_') + '.png';
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    });
+}
+
+
+// Add download buttons to cards
+(function(){
+  const cards = [
+    {id:'card-tpv',    label:'TPV',         file:'tpv'},
+    {id:'card-vc',     label:'VC',          file:'vc'},
+    {id:'card-marcas', label:'Marcas',      file:'marcas'},
+    {id:'card-kpi',    label:'KPIs',        file:'kpis'},
+    {id:'card-opps',   label:'Opps',        file:'oportunidades'},
+  ];
+  const icon = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:11px;height:11px"><path d="M8 2v8m0 0l-3-3m3 3l3-3M2 11v1a2 2 0 002 2h8a2 2 0 002-2v-1"/></svg>';
+  cards.forEach(c => {
+    const el = document.getElementById(c.id);
+    if(!el) return;
+    el.style.position = 'relative';
+    const btn = document.createElement('button');
+    btn.className = 'dl-btn';
+    btn.innerHTML = icon + ' ' + c.label;
+    btn.onclick = () => dlCard(c.id, c.file);
+    el.appendChild(btn);
+  });
+})();
+
 </script>
 </body>
 </html>

@@ -85,8 +85,8 @@ select#hunterSelect:focus{outline:none;border-color:var(--teal)}
 .ksec td{background:#EEF0F8;font-family:'Syne',sans-serif!important;font-size:9px!important;font-weight:700!important;text-transform:uppercase;letter-spacing:.07em;color:var(--navy)!important;border-bottom:1px solid var(--border)!important}
 .ytdc{background:rgba(29,34,113,.07)!important;color:var(--navy)!important;font-weight:600!important}
 .otab{width:100%;border-collapse:collapse;font-size:10px}
-.otab th{padding:3px 5px;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);border-bottom:1px solid var(--border)}
-.otab td{padding:3.5px 5px;border-bottom:1px solid rgba(220,225,240,.6);font-size:10px;color:var(--text)}
+.otab th{padding:3px 5px;font-size:9px;font-weight:500;text-transform:uppercase;letter-spacing:.04em;color:var(--color-text-secondary);border-bottom:0.5px solid var(--color-border-tertiary);text-align:center}.otab th:first-child{text-align:left}
+.otab td{padding:3px 5px;border-bottom:0.5px solid rgba(220,225,240,.6);font-size:10px;color:var(--color-text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}.otab td:first-child{text-align:left}.otab td:last-child{text-align:center;font-family:'DM Mono',monospace}
 .otab td:last-child{text-align:right;font-family:'DM Mono',monospace}
 .otab tr:last-child td{border-bottom:none}
 .hl-sec{margin-bottom:12px}.hl-sec:last-child{margin-bottom:0}
@@ -94,11 +94,20 @@ select#hunterSelect:focus{outline:none;border-color:var(--teal)}
 .hl-b{display:flex;align-items:flex-start;gap:5px;margin-bottom:5px;color:var(--muted);font-size:11px}
 .hl-b::before{content:'›';color:#C0C4D8;flex-shrink:0;font-size:14px;line-height:1.1}
 
-.card-wrap{position:relative}
-.dl-btn{position:absolute;top:8px;right:8px;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:6px;padding:4px 8px;font-size:10px;font-weight:500;color:var(--color-text-secondary);cursor:pointer;display:flex;align-items:center;gap:4px;opacity:0;transition:opacity .2s;z-index:10;white-space:nowrap}
-.card-wrap:hover .dl-btn{opacity:1}
-.dl-btn:hover{background:var(--color-background-info);color:var(--color-text-info);border-color:var(--color-border-tertiary)}
 .dl-btn svg{width:11px;height:11px;flex-shrink:0}
+
+.dl-btn{
+  position:absolute;top:8px;right:8px;
+  background:rgba(255,255,255,0.92);
+  border:1px solid var(--border);
+  border-radius:6px;padding:4px 9px;
+  font-size:10px;font-weight:600;
+  color:var(--navy);cursor:pointer;
+  display:none;align-items:center;gap:4px;
+  z-index:10;white-space:nowrap;
+  font-family:'Inter',sans-serif;
+}
+.dl-btn:hover{background:var(--navy);color:#fff;}
 </style>
 </head>
 <body>
@@ -133,17 +142,17 @@ select#hunterSelect:focus{outline:none;border-color:var(--teal)}
   </div>
 
   <div class="top-row">
-    <div class="chart-card">
+    <div class="chart-card" id="card-tpv">
       <div class="chart-lbl">TPV (USD)</div>
       <div class="chart-wrap"><canvas id="tpvChart"></canvas></div>
       <div class="share-row" id="shareTPV"></div>
     </div>
-    <div class="chart-card">
+    <div class="chart-card" id="card-vc">
       <div class="chart-lbl">VC (USD)</div>
       <div class="chart-wrap"><canvas id="vcChart"></canvas></div>
       <div class="share-row" id="shareVC"></div>
     </div>
-    <div class="marcas-card">
+    <div class="marcas-card" id="card-marcas">
       <div class="marcas-title" id="marcasTitle">Marcas NEW &amp; CURRENT</div>
       <table class="mtab">
         <thead>
@@ -162,11 +171,11 @@ select#hunterSelect:focus{outline:none;border-color:var(--teal)}
   </div>
 
   <div class="bot-row">
-    <div class="kpi-card">
+    <div class="kpi-card" id="card-kpi">
       <div class="sec-title">Seguimiento KPIs</div>
       <table class="ktab" id="kpiTable"></table>
     </div>
-    <div class="opps-card">
+    <div class="opps-card" id="card-opps">
       <div class="sec-title" id="oppsTitle">Oportunidades</div>
       <table class="otab">
         <thead><tr><th>Marca</th><th>Producto</th><th>ETA</th><th>TPV Pot.</th></tr></thead>
@@ -361,9 +370,10 @@ function render(d){
   document.getElementById('oppsTitle').textContent='Oportunidades · '+(d.opps_label||'');
   document.getElementById('oppsTbody').innerHTML=opps.length
     ? opps.map((o,i)=>`<tr style="${i%2===0?'':'background:#F8F9FC'}">
-        <td>${o.marca}</td><td>${o.producto}</td>
-        <td style="font-family:'DM Mono',monospace">${o.eta}</td>
-        <td>${o.tpv}</td></tr>`).join('')
+        <td style="text-align:left">${o.marca}</td>
+        <td style="text-align:center">${o.producto}</td>
+        <td style="text-align:center;font-family:'DM Mono',monospace">${o.eta}</td>
+        <td style="text-align:center;font-family:'DM Mono',monospace">${o.tpv}</td></tr>`).join('')
     : '<tr><td colspan="4" style="color:var(--muted);padding:8px 5px;text-align:center">Sin oportunidades</td></tr>';
 }
 
@@ -374,29 +384,35 @@ DATA.sort((a,b)=>a.name.localeCompare(b.name)).forEach((d,i)=>{
 sel.addEventListener('change',e=>render(DATA[+e.target.value]));
 render(DATA[0]);
 
+
+
+
+
+
 function dlCard(cardId, filename){
   const el = document.getElementById(cardId);
-  if(!el) return;
-  html2canvas(el, {scale:3, backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--color-background-primary') || '#ffffff', useCORS:true, logging:false})
-    .then(canvas => {
-      const a = document.createElement('a');
-      a.download = filename + '_' + DATA[+document.getElementById('sel').value].name.replace(/ /g,'_') + '.png';
-      a.href = canvas.toDataURL('image/png');
-      a.click();
-    });
+  if(!el || typeof html2canvas === 'undefined') return;
+  const btn = el.querySelector('.dl-btn');
+  if(btn) btn.style.display='none';
+  html2canvas(el, {scale:3, backgroundColor:'#ffffff', useCORS:true, logging:false}).then(canvas => {
+    const hunterName = DATA[+document.getElementById('sel').value].name.replace(/ /g,'_');
+    const a = document.createElement('a');
+    a.download = filename + '_' + hunterName + '.png';
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+    if(btn) btn.style.display='flex';
+  });
 }
 
-
-// Add download buttons to cards
-(function(){
+(function addDownloadBtns(){
+  const icon = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:11px;height:11px;flex-shrink:0"><path d="M8 2v8m0 0l-3-3m3 3l3-3M2 11v1a2 2 0 002 2h8a2 2 0 002-2v-1"/></svg>';
   const cards = [
-    {id:'card-tpv',    label:'TPV',         file:'tpv'},
-    {id:'card-vc',     label:'VC',          file:'vc'},
-    {id:'card-marcas', label:'Marcas',      file:'marcas'},
-    {id:'card-kpi',    label:'KPIs',        file:'kpis'},
-    {id:'card-opps',   label:'Opps',        file:'oportunidades'},
+    {id:'card-tpv',    label:'↓ TPV'},
+    {id:'card-vc',     label:'↓ VC'},
+    {id:'card-marcas', label:'↓ Marcas'},
+    {id:'card-kpi',    label:'↓ KPIs'},
+    {id:'card-opps',   label:'↓ Opps'},
   ];
-  const icon = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:11px;height:11px"><path d="M8 2v8m0 0l-3-3m3 3l3-3M2 11v1a2 2 0 002 2h8a2 2 0 002-2v-1"/></svg>';
   cards.forEach(c => {
     const el = document.getElementById(c.id);
     if(!el) return;
@@ -404,8 +420,11 @@ function dlCard(cardId, filename){
     const btn = document.createElement('button');
     btn.className = 'dl-btn';
     btn.innerHTML = icon + ' ' + c.label;
-    btn.onclick = () => dlCard(c.id, c.file);
+    btn.style.display = 'none';
+    btn.onclick = (e) => { e.stopPropagation(); dlCard(c.id, c.id.replace('card-','')); };
     el.appendChild(btn);
+    el.addEventListener('mouseenter', () => btn.style.display='flex');
+    el.addEventListener('mouseleave', () => btn.style.display='none');
   });
 })();
 

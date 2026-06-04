@@ -98,16 +98,13 @@ select#hunterSelect:focus{outline:none;border-color:var(--teal)}
 
 .dl-btn{
   position:absolute;top:8px;right:8px;
-  background:rgba(255,255,255,0.92);
-  border:1px solid var(--border);
+  background:#EEF0F8;border:1px solid #DDE1EC;
   border-radius:6px;padding:4px 9px;
-  font-size:10px;font-weight:600;
-  color:var(--navy);cursor:pointer;
-  display:none;align-items:center;gap:4px;
-  z-index:10;white-space:nowrap;
-  font-family:'Inter',sans-serif;
+  font-size:10px;font-weight:600;color:#1D2271;
+  cursor:pointer;display:flex;align-items:center;gap:4px;
+  z-index:10;white-space:nowrap;font-family:'Inter',sans-serif;
 }
-.dl-btn:hover{background:var(--navy);color:#fff;}
+.dl-btn:hover{background:#1D2271;color:#fff;border-color:#1D2271;}
 </style>
 </head>
 <body>
@@ -420,11 +417,8 @@ function dlCard(cardId, filename){
     const btn = document.createElement('button');
     btn.className = 'dl-btn';
     btn.innerHTML = icon + ' ' + c.label;
-    btn.style.display = 'none';
     btn.onclick = (e) => { e.stopPropagation(); dlCard(c.id, c.id.replace('card-','')); };
     el.appendChild(btn);
-    el.addEventListener('mouseenter', () => btn.style.display='flex');
-    el.addEventListener('mouseleave', () => btn.style.display='none');
   });
 })();
 
